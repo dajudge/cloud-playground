@@ -274,3 +274,71 @@ kafka-cp-zookeeper-0                        2/2     Running   0          2m13s
 kafka-cp-zookeeper-1                        2/2     Running   0          27s
 kafka-cp-zookeeper-2                        2/2     Running   0          20s
 ```
+Start a consumer pod:
+```
+user@host:~/devel/cloud-playground$ demo02-kafka/02-consumer.sh 
+Sending build context to Docker daemon  3.072kB
+Step 1/4 : FROM ubuntu:bionic
+ ---> 7698f282e524
+Step 2/4 : RUN apt-get update &&     apt-get install -y python3 python3-pip &&     rm -rf /var/lib/apt/lists/* &&     pip3 install kafka-python
+ ---> Using cache
+ ---> 7c3cee8078c0
+Step 3/4 : ADD consumer.py /
+ ---> Using cache
+ ---> 6119f15cb272
+Step 4/4 : CMD ["python3", "/consumer.py"]
+ ---> Using cache
+ ---> 9ba689023f9b
+Successfully built 9ba689023f9b
+Successfully tagged registry.192.168.39.109.xip.io:80/demo02/consumer:1559399104
+The push refers to repository [registry.192.168.39.109.xip.io:80/demo02/consumer]
+1e41ab14b600: Layer already exists 
+822e4c818914: Layer already exists 
+8d267010480f: Layer already exists 
+270f934787ed: Layer already exists 
+02571d034293: Layer already exists 
+1559399104: digest: sha256:d2a7f07126e81535b2fbc275456c7c2d89fa388ff2098037046a1af9de8f47fd size: 1363
+pod/kafka-consumer created
+```
+Start a producer pod:
+```
+user@host:~/devel/cloud-playground$ demo02-kafka/03-producer.sh 
+Sending build context to Docker daemon  3.072kB
+Step 1/4 : FROM ubuntu:bionic
+ ---> 7698f282e524
+Step 2/4 : RUN apt-get update &&     apt-get install -y python3 python3-pip &&     rm -rf /var/lib/apt/lists/* &&     pip3 install kafka-python
+ ---> Using cache
+ ---> 7c3cee8078c0
+Step 3/4 : ADD producer.py /
+ ---> 5379470d1222
+Step 4/4 : CMD ["python3", "/producer.py"]
+ ---> Running in 53ea80bd2d77
+Removing intermediate container 53ea80bd2d77
+ ---> d5e3a67617b2
+Successfully built d5e3a67617b2
+Successfully tagged registry.192.168.39.109.xip.io:80/demo02/producer:1559399188
+The push refers to repository [registry.192.168.39.109.xip.io:80/demo02/producer]
+89f7d479d8b5: Pushed 
+822e4c818914: Layer already exists 
+8d267010480f: Layer already exists 
+270f934787ed: Layer already exists 
+02571d034293: Layer already exists 
+1559399188: digest: sha256:ab8b725aaebeed3278ef064c56ba60854dcd70760f123d7b7424b926ae5a5870 size: 1363
+pod/kafka-producer created
+```
+See messages coming in on the consumer side:
+```
+user@host:~/devel/cloud-playground$ kubectl logs -n kafka kafka-consumer
+Starting kafka consumer: kafka-cp-kafka.kafka.svc:9092
+Received {'number': 0}
+Received {'number': 1}
+Received {'number': 2}
+Received {'number': 3}
+Received {'number': 4}
+Received {'number': 5}
+Received {'number': 6}
+Received {'number': 7}
+Received {'number': 8}
+Received {'number': 9}
+```
+Great success!
