@@ -1,0 +1,6 @@
+rabbitmq:
+  password: s3cr3t
+  loadDefinition:
+    enabled: true
+  extraConfiguration: |-
+    management.load_definitions = /app/load_definition.json

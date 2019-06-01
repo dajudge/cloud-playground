@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rabbitmq-producer
+spec:
+  containers:
+    - name: rabbitmq-producer
+      image: ::image::
+      env:
+      - name: "PYTHONUNBUFFERED"
+        value: "0"

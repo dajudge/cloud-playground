@@ -153,7 +153,7 @@ Client: &version.Version{SemVer:"v2.14.0", GitCommit:"05811b84a3f93603dd6c2fcfe5
 Server: &version.Version{SemVer:"v2.14.0", GitCommit:"05811b84a3f93603dd6c2fcfe57944dfa7ab7fd0", GitTreeState:"clean"}
 ```
 ### docker registry
-Run helm chart for docker regsitry and create ingress via demo script:
+Run helm chart for docker registry and create ingress via demo script:
 ```
 user@host:~/devel/cloud-playground$ demo01-setup/02-registry.sh
 NAME:   registry
@@ -190,7 +190,10 @@ NAME                                        READY   STATUS    RESTARTS   AGE
 registry-docker-registry-7b7cd45d44-lqtsj   1/1     Running   0          83s
 ```
 
-## Deploy Kafka using the Confluent Platform's helm chart
+## Try out Kafka
+Kafka is a high-throughput messaging system implemented on top of the JVM.
+
+### Deploy Kafka with helm
 Make sure you have installed helm/tiller before trying to install Kafka with it:
 ```
 user@host:~/devel/cloud-playground$ helm version
@@ -274,6 +277,7 @@ kafka-cp-zookeeper-0                        2/2     Running   0          2m13s
 kafka-cp-zookeeper-1                        2/2     Running   0          27s
 kafka-cp-zookeeper-2                        2/2     Running   0          20s
 ```
+### Produce / consume messages
 Start a consumer pod:
 ```
 user@host:~/devel/cloud-playground$ demo02-kafka/02-consumer.sh 
@@ -342,3 +346,93 @@ Received {'number': 8}
 Received {'number': 9}
 ```
 Great success!
+## Try out RabbitMQ
+RabbitMQ is a rather classic open source message broker implemented in Erlang.
+### Deploy RabbitMQ with helm
+```
+user@host:~/devel/cloud-playground$ demo03-rabbitmq/01-rabbitmq.sh
+NAME:   rabbitmq
+LAST DEPLOYED: Sat Jun  1 14:46:41 2019
+NAMESPACE: rabbitmq
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/ConfigMap
+NAME             DATA  AGE
+rabbitmq-config  2     0s
+
+==> v1/Pod(related)
+NAME        READY  STATUS   RESTARTS  AGE
+rabbitmq-0  0/1    Pending  0         0s
+
+==> v1/Role
+NAME                      AGE
+rabbitmq-endpoint-reader  0s
+
+==> v1/RoleBinding
+NAME                      AGE
+rabbitmq-endpoint-reader  0s
+
+==> v1/Secret
+NAME      TYPE    DATA  AGE
+rabbitmq  Opaque  2     0s
+
+==> v1/Service
+NAME               TYPE       CLUSTER-IP     EXTERNAL-IP  PORT(S)                                AGE
+rabbitmq           ClusterIP  10.111.66.153  <none>       4369/TCP,5672/TCP,25672/TCP,15672/TCP  0s
+rabbitmq-headless  ClusterIP  None           <none>       4369/TCP,5672/TCP,25672/TCP,15672/TCP  0s
+
+==> v1/ServiceAccount
+NAME      SECRETS  AGE
+rabbitmq  1        0s
+
+==> v1beta2/StatefulSet
+NAME      READY  AGE
+rabbitmq  0/1    0s
+...
+```
+Check it's working:
+```
+user@host:~/devel/cloud-playground$ kubectl get pods -n rabbitmq
+NAME         READY   STATUS    RESTARTS   AGE
+rabbitmq-0   1/1     Running   0          16m
+```
+### Open Management UI
+You can use your browser to access RabbitMQ's Management UI.
+
+The default credentials are:
+* user: 'user'
+* password: 's3cr3t'
+```
+user@host:~/devel/cloud-playground$ echo "Point your browser to: http://$(kubectl get ing -n rabbitmq rabbitmq -o jsonpath="{.spec.rules[0].host}")"
+Point your browser to: http://rabbitmq.192.168.39.62.xip.io
+```
+### Send messages via RabbitMQ
+Start a publisher on queue 'playgroud':
+```
+user@host:~/devel/cloud-playground$ demo03-rabbitmq/03-producer.sh 
+Sending build context to Docker daemon  3.072kB
+Step 1/4 : FROM ubuntu:bionic
+ ---> 7698f282e524
+Step 2/4 : RUN apt-get update &&     apt-get install -y python3 python3-pip &&     rm -rf /var/lib/apt/lists/* &&     pip3 install pika
+ ---> Using cache
+ ---> 77e080ebbe53
+Step 3/4 : ADD producer.py /
+ ---> b067ba19851c
+Step 4/4 : CMD ["python3", "/producer.py"]
+ ---> Running in 99423383da28
+Removing intermediate container 99423383da28
+ ---> f9c14bdc1576
+Successfully built f9c14bdc1576
+Successfully tagged registry.192.168.39.62.xip.io:80/demo03/producer:1559407538
+The push refers to repository [registry.192.168.39.62.xip.io:80/demo03/producer]
+566f05c7b2b9: Pushed 
+486e398b1558: Layer already exists 
+8d267010480f: Layer already exists 
+270f934787ed: Layer already exists 
+02571d034293: Layer already exists 
+1559407538: digest: sha256:0430e2dade03a943e3ab499f7abd1404d38b1bed0cb283c29accd9e11db15031 size: 1363
+pod/rabbitmq-producer created
+```
+You should not be able to verify using the Management UI that messages are being sent to the
+queue.
