@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-producer
+spec:
+  containers:
+    - name: kafka-producer
+      image: ::image::
