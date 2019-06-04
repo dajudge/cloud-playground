@@ -11,4 +11,4 @@ spec:
       - name: "PYTHONUNBUFFERED"
         value: "0"
       - name: "BOOTSTRAP_SERVERS"
-        value: "kafka-cp-kafka-headless:9092"
+        value: "kafka-headless:9092"
