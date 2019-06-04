@@ -5,7 +5,10 @@ metadata:
 spec:
   containers:
     - name: kafka-producer
-      image: ::image::
+      image: kafka-producer:v1
+      imagePullPolicy: Never
       env:
       - name: "PYTHONUNBUFFERED"
         value: "0"
+      - name: "BOOTSTRAP_SERVERS"
+        value: "kafka-cp-kafka-headless:9092"
